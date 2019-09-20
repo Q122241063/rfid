@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>RFID用户操作</title>
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <link rel="stylesheet" href="/static/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/AdminLTE.min.css">
+  <script src="/static/jquery.min.js"></script> 
+</head>
+<body>
+    <!-- Main content -->
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+	<div class="row">
+		<div class="col-md-6">
+      <h2>
+
+        RFID 读写器用户操作
+        <small>Reader user operation</small>
+      </h2>
+		</div>
+			<div class="col-md-6">
+			<!-- 	<a href="javascript:void(0);" class="tm">
+				<div style="width: 8%;float: left;margin: 0 3% 0 40%">
+					<img src="/static/images/扫描.png" class="img-responsive">
+					<p style="text-align: center;font-size: 6px">单独扫码</p>
+				</div>
+                </a> -->
+				<a href="javascript:void(0);" class="pl">
+				<div style="width: 8%;float: left;margin: 0 5% 0 40%">
+					<img src="/static/images/批量.png" class="img-responsive">
+					<p style="text-align: center;font-size: 6px">批量扫码</p>				
+				</div>
+				</a>
+				<a href="javascript:void(0);" class="qc">
+				<div style="width: 8%;float: left;margin: 0 5%">
+					<img src="/static/images/清空.png" class="img-responsive">
+					<p style="text-align: center;font-size: 6px">清空缓存</p>				
+				</div>	
+				</a>	
+				<a href="javascript:void(0);" class="up">	
+				<div style="width: 8%;float: left;margin: 0 5%">
+					<img src="/static/images/上传.png" class="img-responsive">
+					<p style="text-align: center;font-size: 6px">确认上传</p>				
+				</div>
+				</a>	
+			</div>
+		</div>
+    </section>
+    <section class="content">
+      <div class="row">
+        <div class="col-md-12">
+          <div>
+            <div class="box-header with-border">
+			  <h4 style="width: 100px;float:left;font-weight: 600">Mark </h4>
+			 <h4 style="float: right;margin-right: 5%"><span  style="font-size:16px;font-weight: 600;width: 50px">统计:<span  id="liang"></span></span></h4>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <table class="table table-bordered box" id="tab">
+                <tr>
+                  <th>Number</th>
+                  <th style="text-align: center;width: 5%">详情</th>
+				</tr>				
+                <!-- <tr>              
+                  <td>E237634983709900</td>
+                  <td>
+		               <a href=""><span style="text-align: center;margin-left: 15%">删除</span></a>
+                  </td>
+                </tr>             -->
+			  </table>
+
+			  <!-- 翻页器 -->
+			  <nav aria-label="Page navigation">
+				<ul class="pagination" id="pagination">
+				</ul>
+			  </nav>
+			</div>
+          </div>
+        </div>
+      </div>
+    </section>
+<script type="text/javascript">
+
+// $(function() {
+// 		// 监听表单提交事件
+// 		$(".tm").click(function () {
+// 			// 发送ajax请求		
+// 			$.ajax({
+// 				type: "post",
+// 				url: "/tm",
+// 				data: '',
+// 				dataType: 'json',
+// 				success: function(data) {
+			
+// 					var str = '';
+//                             str +='<tr>';
+//                                 str += '<td>'+data+'</td>';
+//                                 str += '<td>';
+//                                    str += '<a href="">';
+//                                         str +='<span style="text-align: center;margin-left: 15%">删除</span>' ;
+//                                     str += '</a>';
+//                                 str += '</td>';
+//                             str +='</tr>';
+
+// 							$('.box').append(str);
+
+// 					console.log(data);	
+// 				},
+// 				error : function(error) {
+// 					console.log();	 
+// 				}
+// 			});
+					
+// 		    });
+//         });
+
+
+	function selectPage(i) {
+		$("#nav_" + i).addClass("active").siblings().removeClass("active");
+		
+		var currentData = window.pl_data.slice(i * 10, (i + 1) * 10);
+
+		console.log({count:window.pl_data});
+
+		// alert(window.pl_data.length);
+
+		$("#liang").text(window.pl_data.length);	
+		var str = '<tr><th>Number</th><th style="text-align: center;width: 5%">操作</th></tr>';
+		for (var j = 0; j < currentData.length; j++) {
+			str +='<tr class="mar">';
+			str += '<td>'+ currentData[j] +'</td><td><a href="">';
+			str +='<span style="text-align: center;margin-left: 15%">详情</span>';
+			str += '</a></td></tr>';
+			
+		}
+		$('.box').html(str);
+	}
+
+
+	$(document).ready(function(){
+			// 发送ajax请求
+			$.ajax({
+				type: "post",
+				url: "/pl2",
+				data: '',
+				dataType: 'json',
+				success: function(data) {		
+					console.log(data);		
+					window.pl_data = data;
+					// 处理翻页数据
+					var datastr  = JSON.stringify(data);
+					var pageSize = data.length;
+					var pageCount = Math.ceil(pageSize / 10);
+					var pageNav = '';
+					for (var i=0; i<pageCount; i++) {
+	pageNav += `<li id="nav_${i}"><a href="javascript:;" onclick="selectPage(${i})">${i+1}</a></li>`;
+					}
+					$("#pagination").html(pageNav);
+					selectPage(0);
+				},
+				error : function(error) {
+					console.log('设备未连接');	
+					alert('请检查设备连接'); 
+				},
+			});
+	
+
+
+		// 监听表单提交事件
+		$(".qc").click(function () {
+			// 发送ajax请求		
+			$.ajax({
+				type: "post",
+				url: "/qc",
+				data: '',
+				dataType: 'json',
+				success: function(data) {
+					// alert(response.msg);
+					// eval('var arr ='+data);
+                    console.log(data);
+                    // location.reload([bForceGet]);
+                    location.replace(location)	
+				},
+				error : function(error) {
+					console.log();	 
+				}
+			});
+			// return false;			
+		    });
+
+	
+		})
+
+
+				//上传
+		$(function() {
+		// 监听表单提交事件
+		$(".up").click(function () {
+			// 发送ajax请求		
+			$.ajax({
+				type: "post",
+				url: "/sav",
+				data: '',
+				dataType: 'json',
+				success: function(data) {
+					// alert(response.msg);
+					// eval('var arr ='+data);
+                    console.log(data);
+                    // location.reload([bForceGet]);
+                    // location.replace(location)	
+				},
+				error : function(error) {
+					console.log();	 
+				}
+			});
+			// return false;			
+		    });
+        });
+     
+ 
+
+
+
+
+
+
+
+
+
+
+
+</script>
+
+</body>
+</html>
